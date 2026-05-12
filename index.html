@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>Collegio Carlo Alberto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root { 
+      --primary: #0072CE; 
+      --bg: #f4f6f8; 
+      --text: #2c3e50; 
+      --footer-bg: #111827; 
+      --footer-text: #ffffff; 
+      --meet-color: #00796b; 
+      --gmail-color: #EA4335;
+    }
+    body { font-family: 'Roboto', sans-serif; background: var(--bg); margin: 0; color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    .hidden { display: none !important; }
+    
+    .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 500; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,114,206,0.3); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); box-shadow: none; }
+    .btn-sm { padding: 6px 12px; width: auto; font-size: 13px; }
+    
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid rgba(0,0,0,0.02); }
+    .input-field { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 8px; background: #fff; box-sizing: border-box; transition: 0.3s; }
+    .input-field:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(0,114,206,0.1); }
+    
+    /* --- LANDING PAGE --- */
+    #landing-page {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: #ffffff; 
+        z-index: 9999;
+        display: flex; justify-content: center; align-items: center;
+        transition: opacity 1s ease-out;
+    }
+    .landing-logo { width: 250px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+    /* LOGIN PAGE */
+    .login-container { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; background: white; }
+    .login-logo { width: 180px; margin-bottom: 20px; object-fit: contain; }
+    .login-title { font-size: 24px; font-weight: 700; color: var(--primary); margin-bottom: 30px; letter-spacing: 0.5px; text-transform: uppercase; }
+    
+    /* HEADER & SIDEBAR */
+    .topbar { 
+        position: fixed; top: 0; left: 0; right: 0; height: 70px; background: white; 
+        display: grid; grid-template-columns: 50px 1fr 50px; align-items: center; 
+        padding: 0 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; 
+    }
+    .logo-area { display: flex; justify-content: center; align-items: center; }
+    .logo-img-header { height: 45px; width: auto; object-fit: contain; }
+    .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #eee; background: white; cursor: pointer; justify-self: end; transition: 0.2s; }
+    .profile-avatar:hover { border-color: var(--primary); }
+
+    .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100vh; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 300; transition: 0.3s; padding-top: 20px; }
+    .sidebar.active { left: 0; }
+    .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 250; display: none; }
+    .sidebar-overlay.active { display: block; }
+    
+    .sidebar-item { padding: 15px 20px; border-bottom: 1px solid #f9f9f9; display: flex; align-items: center; gap: 15px; cursor: pointer; color: #444; text-decoration: none; transition: 0.2s; }
+    .sidebar-item:hover { background: #f0f7ff; color: var(--primary); padding-left: 25px; }
+
+    /* LAYOUT & WIDGETS */
+    .container { margin-top: 90px; padding: 0 20px 40px 20px; max-width: 900px; margin-left: auto; margin-right: auto; flex: 1; width: 100%; box-sizing: border-box; }
+    
+    .section-title { font-size: 13px; font-weight: 700; color: #888; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; margin-top: 35px; border-left: 3px solid var(--primary); padding-left: 10px; }
+    .app-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+    .app-card { background: white; border-radius: 16px; padding: 15px 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; border: 1px solid transparent; }
+    .app-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: #f0f0f0; }
+    .app-card img { width: 42px; height: 42px; margin-bottom: 8px; object-fit: contain; }
+    .app-card span { font-size: 13px; color: #555; font-weight: 500; }
+
+    .stat-row { display: flex; gap: 15px; margin-bottom: 20px; }
+    .stat-card { flex: 1; text-align: center; padding: 20px; background: white; border-radius: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 5px solid var(--primary); transition: 0.2s; position: relative; overflow: hidden; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+    .stat-val { font-size: 28px; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+    .stat-label { font-size: 12px; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* DASHBOARD */
+    .dashboard-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .dashboard-split { grid-template-columns: 1fr; } }
+    
+    .list-item { padding: 15px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+    .list-item:hover { background: #fafafa; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item-title { font-weight: 600; color: #444; margin-bottom: 2px; }
+    .list-item-sub { font-size: 12px; color: #888; }
+    .grade-badge { background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+    
+    .action-btn { background: white; padding: 20px; border-radius: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.2s; border: 1px solid transparent; }
+    .action-btn:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    
+    .action-btn.prominent { background: linear-gradient(135deg, var(--primary), #005bb5); color: white; border: none; }
+    .action-btn.prominent .material-icons { color: white; }
+    
+    /* FOOTER */
+    .cca-footer { background-color: var(--footer-bg); color: var(--footer-text); padding: 40px 20px; margin-top: auto; font-size: 14px; line-height: 1.6; }
+    .footer-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px; }
+    .footer-col { flex: 1; min-width: 250px; }
+    .footer-col h4 { color: white; margin-top: 0; margin-bottom: 15px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .footer-col p { margin: 5px 0; color: #aaa; }
+    .footer-col a { color: #aaa; text-decoration: none; transition: 0.2s; }
+    .footer-col a:hover { color: white; text-decoration: none; padding-left: 5px; }
+    
+    .social-icons { display: flex; gap: 15px; margin-top: 15px; }
+    .social-icons a { text-decoration: none; }
+    .social-icons i { font-size: 18px; color: white; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.1); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+    .social-icons i:hover { background: var(--primary); transform: translateY(-3px); }
+    
+    @media (max-width: 768px) {
+      .footer-content { flex-direction: column; text-align: center; }
+      .social-icons { justify-content: center; }
+      .app-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* MODALS */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 400; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+    .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    #modal-profile .modal-content { overflow-x: hidden !important; box-sizing: border-box; width: 95%; max-width: 400px; }
+
+    /* NOTIFICHE TABS */
+    .notif-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; }
+    .notif-tab { padding: 10px 15px; cursor: pointer; background: transparent; border: none; color: #888; font-weight: 600; transition: 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .notif-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    
+    .notif-item { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ff9800; display: flex; justify-content: space-between; align-items: flex-start; }
+    .notif-item.letto { background: #f0f0f0; opacity: 0.7; border-left-color: #ccc; }
+    .notif-item-content { text-align: left; flex: 1; }
+    .notif-item-title { font-weight: 600; color: #444; margin-bottom: 5px; font-size: 14px; }
+    .notif-item-text { color: #666; font-size: 13px; margin-bottom: 5px; line-height: 1.4; }
+    .notif-item-date { color: #aaa; font-size: 11px; }
+    .notif-item-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .notif-btn-read { background: #e8f5e9; color: #2e7d32; border: none; padding: 4px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+    .notif-btn-read:hover { background: #c8e6c9; }
+    .notif-btn-delete { background: #ffebee; color: #c62828; border: none; padding: 4px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+    .notif-btn-delete:hover { background: #ffcdd2; }
+    
+  </style>
+</head>
+<body>
+
+  <div id="landing-page">
+     <img src="https://drive.google.com/thumbnail?sz=w1000&id=1vINxp_grWNwSzAJ6MzOG4CTVpJaWbas8" class="landing-logo" alt="CCA Intro">
+  </div>
+
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div id="sidebar" class="sidebar">
+    <div style="padding:0 20px 20px; border-bottom:1px solid #f0f0f0; margin-bottom:10px;">
+        <h3 style="color:var(--primary); margin:0; font-weight:700;">Menu</h3>
+    </div>
+    
+    <div class="sidebar-item" onclick="openNotifications()">
+        <span class="material-icons">notifications_none</span> Notifiche
+        <div id="sidebar-notif-badge" style="width:8px; height:8px; background:#e74c3c; border-radius:50%; margin-left:auto; display:none;"></div>
+    </div>
+    <a href="https://www.carloalberto.org/education/" target="_blank" class="sidebar-item">
+        <span class="material-icons">school</span> Programmi Collegio
+    </a>
+    <a href="https://www.carloalberto.org/events/list/" target="_blank" class="sidebar-item">
+        <span class="material-icons">event</span> Eventi Collegio
+    </a>
+    <a href="https://www.carloalberto.org/" target="_blank" class="sidebar-item">
+        <span class="material-icons">info</span> Info Collegio
+    </a>
+    
+    <div class="sidebar-item" style="color:#e74c3c; margin-top:20px; border-top:1px solid #f0f0f0" onclick="location.reload()">
+        <span class="material-icons">logout</span> Esci
+    </div>
+  </div>
+
+  <div id="view-login" class="login-container">
+    <img src="https://drive.google.com/thumbnail?sz=w1000&id=1vINxp_grWNwSzAJ6MzOG4CTVpJaWbas8" class="login-logo" alt="Logo CCA">
+    <div class="login-title">Accedi al Portale</div>
+    
+    <div id="form-login" style="width:100%; max-width:320px">
+        <input type="email" id="log-email" class="input-field" placeholder="Email Istituzionale">
+        <input type="password" id="log-pass" class="input-field" placeholder="Password">
+        <button type="button" class="btn" onclick="doLogin()">Accedi</button>
+        <div style="text-align:center; margin-top:20px; font-size:14px;">
+            <span style="color:#666">Non hai un account?</span> <a href="javascript:void(0)" onclick="toggleRegister()" style="color:var(--primary); text-decoration:none; font-weight:600">Crea Account</a>
+        </div>
+        <div style="text-align:center; margin-top:15px; font-size:13px;">
+             <a href="#" style="color:#999; text-decoration:none">Hai bisogno di aiuto?</a>
+        </div>
+    </div>
+
+    <div id="form-register" class="hidden" style="width:100%; max-width:320px; text-align:left;">
+        <h3 style="text-align:center; margin-top:0; color:var(--primary)">Nuova Registrazione</h3>
+        
+        <input type="text" id="reg-nome" class="input-field" placeholder="Nome">
+        <input type="text" id="reg-cognome" class="input-field" placeholder="Cognome">
+        <input type="email" id="reg-email" class="input-field" placeholder="Email">
+        <input type="password" id="reg-pass" class="input-field" placeholder="Password">
+        
+        <label style="font-size:12px; color:#666; margin-left:5px; margin-bottom:5px; display:block;">Seleziona il tuo ruolo:</label>
+        <select id="reg-role" class="input-field" onchange="updateRegFields()">
+            <option value="student">Studente</option>
+            <option value="teacher">Docente</option>
+            <option value="admin">Admin</option>
+        </select>
+        
+        <div id="reg-fields-student">
+            <input type="text" id="reg-matricola" class="input-field" placeholder="Matricola">
+            <select id="reg-programma" class="input-field">
+                <option value="" disabled selected>Programma di studi</option>
+                <option value="Allievi">Allievi</option>
+                <option value="Master">Master</option>
+                <option value="Dottorando">Dottorando</option>
+            </select>
+        </div>
+
+        <div id="reg-fields-admin" class="hidden">
+            <input type="password" id="reg-passkey" class="input-field" placeholder="Pass Key Riconoscimento">
+            <p style="font-size:11px; color:#e74c3c; margin-top:-5px">Richiesta chiave di sicurezza staff.</p>
+        </div>
+
+        <button type="button" class="btn" onclick="doRegister()">Registrati</button>
+        <button type="button" class="btn btn-outline" style="margin-top:10px" onclick="toggleRegister()">Torna al Login</button>
+    </div>
+
+  </div>
+
+  <div id="view-app" class="hidden">
+    <div class="topbar">
+      <div style="position:relative; display:inline-block; cursor:pointer" onclick="toggleSidebar()">
+          <span class="material-icons" style="color:#555; font-size:28px">menu</span>
+          <div id="external-notif-badge" style="position:absolute; top:4px; right:4px; width:8px; height:8px; background:#e74c3c; border-radius:50%; display:none;"></div>
+      </div>
+      
+      <div class="logo-area">
+         <img src="https://drive.google.com/thumbnail?sz=w1000&id=1vINxp_grWNwSzAJ6MzOG4CTVpJaWbas8" class="logo-img-header" alt="Logo"> 
+      </div>
+      
+      <img id="top-avatar" class="profile-avatar" src="https://via.placeholder.com/40" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" onclick="openProfile()">
+    </div>
+
+    <div id="main-container" class="container"></div>
+
+    <footer class="cca-footer">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h4>Fondazione Collegio Carlo Alberto</h4>
+                <p>Piazza Arbarello 8, Torino</p>
+                <p>+39 011 15630 800</p>
+                <p><a href="mailto:segreteria@carloalberto.org">segreteria@carloalberto.org</a></p>
+            </div>
+            <div class="footer-col" style="text-align:center">
+                <h4>Social Network</h4>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/collegiocarloalberto" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://x.com/CollegioCA" target="_blank"><i class="fab fa-twitter"></i></a> 
+                    <a href="https://www.linkedin.com/school/collegio-carlo-alberto" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.instagram.com/collegiocarloalberto/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.youtube.com/collegiocarloalberto" target="_blank"><i class="fab fa-youtube"></i></a>
+                    <a href="https://open.spotify.com/show/2vPWuKETPTOu9VLWON3658?si=IZwkFx4sTVSi756K1BcdGg&nd=1&dlsi=7577af81d501464c" target="_blank"><i class="fab fa-spotify"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+  </div>
+
+  <div id="modal-notif" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3><span class="material-icons" style="vertical-align:middle; color:orange">campaign</span> Notifiche</h3>
+      
+      <div class="notif-tabs">
+        <button class="notif-tab active" onclick="switchNotifTab('non-lette')">Non Lette</button>
+        <button class="notif-tab" onclick="switchNotifTab('lette')">Lette</button>
+      </div>
+      
+      <div id="notif-list-non-lette" class="notif-list"></div>
+      <div id="notif-list-lette" class="notif-list hidden"></div>
+      
+      <button class="btn btn-outline" onclick="closeModal('modal-notif')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="modal-media" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>Dettaglio Media</h3>
+      <div class="stat-row">
+        <div class="stat-card" style="border-left-color: #0072CE">
+          <div class="stat-val" id="mod-media-p">--</div><div class="stat-label">Ponderata</div>
+        </div>
+        <div class="stat-card" style="border-left-color: #555">
+          <div class="stat-val" id="mod-media-a">--</div><div class="stat-label">Aritmetica</div>
+        </div>
+      </div>
+      <button class="btn btn-outline" onclick="closeModal('modal-media')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="modal-cfu" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>Progresso CFU</h3>
+      <div style="height:200px; position:relative; margin-bottom:15px;">
+          <canvas id="cfuChart"></canvas>
+      </div>
+      <p id="txt-mancanti" style="margin-top:10px; font-size:15px; color:#555"></p>
+      <button class="btn btn-outline" onclick="closeModal('modal-cfu')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="modal-ticket" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3><span class="material-icons" style="vertical-align:middle; color:#d32f2f">support_agent</span> Apri Ticket</h3>
+      <select id="msg-type" class="input-field">
+        <option value="">-- Seleziona categoria --</option>
+        <option value="prenotazione_aula">Prenotazione Aula</option>
+        <option value="info_didattica_allievi">Info Didattica (Allievi)</option>
+        <option value="info_didattica_master">Info Didattica (Master)</option>
+        <option value="info_didattica_dottorandi">Info Didattica (Dottorandi)</option>
+        <option value="problemi_it">Problemi IT</option>
+        <option value="altro">Altro</option>
+      </select>
+      <textarea id="msg-text" class="input-field" rows="5" placeholder="Descrivi il tuo problema o richiesta..."></textarea>
+      <button class="btn" onclick="sendTicket()">Invia Ticket</button>
+      <button class="btn btn-outline" style="margin-top:10px" onclick="closeModal('modal-ticket')">Annulla</button>
+    </div>
+  </div>
+
+  <div id="modal-profile" class="modal-overlay hidden">
+    <div class="modal-content" style="display:flex; flex-direction:column; align-items:center;">
+      <img id="prof-img-lg" src="" style="width:120px; height:120px; border-radius:50%; object-fit:cover; margin-bottom:20px; border:4px solid white; box-shadow:0 5px 15px rgba(0,0,0,0.1);">
+      <h2 id="prof-name" style="margin:0 0 5px 0; color:var(--text); font-size:24px;"></h2>
+      <div style="margin-bottom:30px">
+         <span id="prof-role-badge" style="background:#eef2f6; color:#555; padding:8px 18px; border-radius:30px; font-size:14px; font-weight:600;"></span>
+      </div>
+      <label class="btn btn-outline" style="width:100%; margin-bottom:10px">
+        <i class="material-icons" style="vertical-align:middle; font-size:18px; margin-right:5px">photo_camera</i> Cambia Foto
+        <input type="file" style="display:none" onchange="handleFileUpload(this)">
+      </label>
+      <button class="btn btn-outline" style="border-color:#ffcdd2; color:#d32f2f; width:100%" onclick="closeModal('modal-profile')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="modal-courses" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3><span class="material-icons" style="vertical-align:middle; color:var(--primary)">class</span> I Tuoi Corsi</h3>
+      <div id="list-courses-container" style="text-align:left; margin-bottom:20px; max-height:300px; overflow-y:auto;"></div>
+      <button class="btn btn-outline" onclick="closeModal('modal-courses')">Chiudi</button>
+    </div>
+  </div>
+
+  <div id="modal-exams" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3><span class="material-icons" style="vertical-align:middle; color:#4caf50">history_edu</span> Libretto</h3>
+      <div id="list-exams-container" style="text-align:left; margin-bottom:20px; max-height:300px; overflow-y:auto;"></div>
+      <button class="btn btn-outline" onclick="closeModal('modal-exams')">Chiudi</button>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let appData = null;
+    let currentNotifTab = 'non-lette';
+
+    window.onload = function() {
+        setTimeout(function() {
+            const landing = document.getElementById('landing-page');
+            landing.style.opacity = '0';
+            setTimeout(() => { landing.style.display = 'none'; }, 1000);
+        }, 2000); 
+    };
+
+    function toggleSidebar() { 
+      document.getElementById('sidebar').classList.toggle('active');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+    }
+
+    // --- LOGIN & REGISTER LOGIC ---
+    function toggleRegister() {
+        document.getElementById('form-login').classList.toggle('hidden');
+        document.getElementById('form-register').classList.toggle('hidden');
+    }
+
+    function updateRegFields() {
+        const role = document.getElementById('reg-role').value;
+        const studentFields = document.getElementById('reg-fields-student');
+        const adminFields = document.getElementById('reg-fields-admin');
+        
+        if (role === 'student') {
+            studentFields.classList.remove('hidden');
+            adminFields.classList.add('hidden');
+        } else if (role === 'admin') {
+            studentFields.classList.add('hidden');
+            adminFields.classList.remove('hidden');
+        } else {
+            studentFields.classList.add('hidden');
+            adminFields.classList.add('hidden');
+        }
+    }
+
+    function doRegister() {
+        const nome = document.getElementById('reg-nome').value;
+        const cognome = document.getElementById('reg-cognome').value;
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-pass').value;
+        const role = document.getElementById('reg-role').value;
+        
+        if(!nome || !cognome || !email || !pass) return alert("Compila tutti i campi obbligatori.");
+
+        const form = { nome, cognome, email, password: pass, role: role };
+
+        if(role === 'student') {
+            form.matricola = document.getElementById('reg-matricola').value;
+            form.programma = document.getElementById('reg-programma').value;
+            if(!form.matricola || !form.programma) return alert("Inserisci Matricola e Programma.");
+        }
+        if(role === 'admin') {
+            form.passKey = document.getElementById('reg-passkey').value;
+            if(!form.passKey) return alert("Inserisci la Pass Key Admin.");
+        }
+
+        const btn = document.querySelector('#form-register .btn');
+        const originalText = btn.innerText;
+        btn.innerText = "Registrazione...";
+        btn.disabled = true;
+
+        google.script.run.withSuccessHandler(res => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+            if(res.success) {
+                alert("Registrazione completata! Ora puoi accedere.");
+                toggleRegister();
+            } else {
+                alert("Errore: " + res.error);
+            }
+        }).apiRegister(form);
+    }
+
+    function doLogin() {
+      const e = document.getElementById('log-email').value;
+      const p = document.getElementById('log-pass').value;
+      if(!e || !p) return alert("Inserisci email e password");
+
+      const btn = document.querySelector('#form-login .btn');
+      const originalText = btn.innerText;
+      btn.innerText = "Accesso in corso...";
+      btn.disabled = true;
+
+      google.script.run.withSuccessHandler(res => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        
+        if(!res) return alert("Credenziali errate o utente non trovato.");
+        currentUser = res.user;
+        appData = res.data;
+        initApp();
+      }).getClientData(e);
+    }
+
+    function initApp() {
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('view-app').classList.remove('hidden');
+      
+      const defaultAvatar = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+      const avatarUrl = (currentUser.img && currentUser.img !== "") ? currentUser.img : defaultAvatar;
+      document.getElementById('top-avatar').src = avatarUrl;
+      
+      // LOGICA NOTIFICA - Controlla se ci sono notifiche non lette
+      const hasUnread = currentUser.notifiche && currentUser.notifiche.some(n => !n.letto);
+      if(hasUnread) {
+          document.getElementById('sidebar-notif-badge').style.display = 'block';
+          document.getElementById('external-notif-badge').style.display = 'block';
+      }
+
+      const c = document.getElementById('main-container');
+      let html = renderWidgets();
+
+      if(currentUser.role === 'student') html += renderStudent();
+      else if(currentUser.role === 'teacher') html += renderTeacher();
+      else if(currentUser.role === 'admin') html += renderAdmin();
+      
+      c.innerHTML = html;
+    }
+
+    function renderWidgets() {
+      return `
+      <div class="app-grid">
+        <a href="https://drive.google.com" target="_blank" class="app-card" style="text-decoration:none; color:inherit;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" alt="Drive">
+            <span>Drive</span>
+        </a>
+        <a href="https://classroom.google.com" target="_blank" class="app-card" style="text-decoration:none; color:inherit;">
+            <img src="https://www.gstatic.com/classroom/logo_square_48.svg" alt="Classroom">
+            <span>Classroom</span>
+        </a>
+        <a href="https://mail.google.com" target="_blank" class="app-card" style="text-decoration:none; color:inherit;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail">
+            <span>Gmail</span>
+        </a>
+        <a href="https://calendar.google.com" target="_blank" class="app-card" style="text-decoration:none; color:inherit;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Google_Calendar_icon_%282020%29.svg" alt="Calendar">
+            <span>Calendar</span>
+        </a>
+      </div>
+      `;
+    }
+
+    function renderStudent() {
+    let teachersHtml = '<p style="color:#999; text-align:center; padding:10px;">Elenco docenti non disponibile.</p>';
+    
+    if(appData.teachersList && appData.teachersList.length > 0) {
+        teachersHtml = appData.teachersList.map(t => `
+            <div class="list-item">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:35px; height:35px; background:#e3f2fd; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold;">
+                        ${t.nome.charAt(0)}${t.cognome.charAt(0)}
+                    </div>
+                    <div>
+                        <div class="list-item-title">${t.nome} ${t.cognome}</div>
+                        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${t.email}" target="_blank" style="font-size:12px; color:#666; text-decoration:none">
+                            ${t.email}
+                        </a>
+                    </div>
+                </div>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=${t.email}" target="_blank" class="btn btn-sm btn-outline">
+                    <i class="far fa-envelope"></i>
+                </a>
+            </div>
+        `).join('');
+    }
+    
+      let progInfo = (currentUser.programma) ? `• ${currentUser.programma}` : "";
+
+      return `
+      <h2 style="margin-top:0; font-weight:400; font-size:26px;">Ciao, <b>${currentUser.nome}</b> 👋</h2>
+      <p style="color:#666; margin-top:-10px; margin-bottom:25px">${currentUser.tipoStudente || 'Studente'} - Matr. ${currentUser.matricola} ${progInfo}</p>
+
+      <div class="section-title">Cruscotto Carriera</div>
+
+      <div class="dashboard-split">
+        <div class="stat-card" onclick="openMediaModal()">
+          <div class="stat-val">${appData.media}</div>
+          <div class="stat-label">Media Voti</div>
+        </div>
+        <div class="stat-card" onclick="openCFUModal()">
+          <div class="stat-val">${appData.cfu}</div>
+          <div class="stat-label">CFU Acquisiti</div>
+        </div>
+      </div>
+
+      <div class="section-title">Carriera Didattica</div>
+      
+      <div class="dashboard-split">
+          <div class="stat-card" onclick="openCoursesModal()" style="border-left: 5px solid #ff9800; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+             <span class="material-icons" style="font-size:40px; color:#ff9800; margin-bottom:10px;">class</span>
+             <div class="stat-label" style="font-size:15px; color:#444; font-weight:700;">I Tuoi Corsi</div>
+             <div style="font-size:12px; color:#888; margin-top:5px">Visualizza elenco</div>
+          </div>
+
+          <div class="stat-card" onclick="openExamsModal()" style="border-left: 5px solid #4caf50; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
+             <span class="material-icons" style="font-size:40px; color:#4caf50; margin-bottom:10px;">history_edu</span>
+             <div class="stat-label" style="font-size:15px; color:#444; font-weight:700;">Libretto Esami</div>
+             <div style="font-size:12px; color:#888; margin-top:5px">Storico voti</div>
+          </div>
+      </div>
+
+      <div class="section-title">Contatti & Supporto</div>
+      <div class="card">
+          <h3 style="margin-top:0; font-size:16px;">Rubrica Docenti</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:15px">Contatta direttamente i docenti del collegio.</p>
+          ${teachersHtml}
+      </div>
+
+      <div class="action-btn prominent" style="margin-top:20px" onclick="openTicketModal()">
+          <div style="display:flex; align-items:center; gap:10px">
+             <span class="material-icons">support_agent</span> <b>Apri Ticket</b>
+          </div>
+          <span class="material-icons" style="font-size:18px">send</span>
+      </div>
+      `;
+    }
+
+    function renderTeacher() {
+      return `
+      <div class="section-title">Area Docente - Accesso Limitato</div>
+      <h2 style="margin-top:0">Benvenuto, ${currentUser.nome} ${currentUser.cognome}</h2>
+      
+      <div class="card" style="background:#fff3cd; border-left: 5px solid #ffc107; padding:20px; margin-bottom:20px;">
+        <h4 style="margin-top:0; color:#856404; display:flex; align-items:center; gap:10px;">
+          <span class="material-icons" style="color:#ffc107;">info</span> Accesso Limitato
+        </h4>
+        <p style="color:#856404; margin-bottom:0; font-size:14px;">
+          L'accesso all'area Docente è limitata alla gestione dello spazio Google Workspace e alle comunicazioni o supporto con lo Staff del Collegio Carlo Alberto. Può utilizzare la sezione "Contatta Segreteria" qui sotto per inviare un ticket.
+        </p>
+      </div>
+
+      <div class="action-btn prominent" onclick="openTicketModal()">
+          <div style="display:flex; align-items:center; gap:10px">
+             <span class="material-icons">support_agent</span> <b>Contatta Segreteria</b>
+          </div>
+      </div>
+
+      `;
+    }
+
+    function renderAdmin() {
+      return `
+      <div class="section-title">Pannello Amministrazione</div>
+      <h2 style="margin-top:0">Gestione Collegio</h2>
+
+      <div class="card" style="border-left: 5px solid #ce1c00;">
+        <h3 style="margin-top:0; display:flex; align-items:center; gap:10px;">
+          <span class="material-icons" style="color:#ce1c00; font-size:24px;">contacts</span> Rubrica Studenti e Docenti
+        </h3>
+        <p style="font-size:13px; color:#666; margin-bottom:15px">Invia email singole o per gruppi di studenti in base al loro programma, oppure via notifica app.</p>
+        
+        <select id="adm-contact-type" class="input-field" onchange="updateAdminContactList()">
+          <option value="">Seleziona categoria...</option>
+          <option value="docenti">Docenti</option>
+          <option value="studenti-tutti">Studenti (Tutti)</option>
+          <option value="Allievi">Studenti (Allievi)</option>
+          <option value="Master">Studenti (Master)</option>
+          <option value="Dottorando">Studenti (Dottorandi)</option>
+        </select>
+        
+        <div id="adm-contact-list" style="text-align:left; max-height:300px; overflow-y:auto; margin-bottom:15px;"></div>
+        
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <textarea id="adm-email-msg" class="input-field" placeholder="Messaggio..." rows="3" style="flex:1; margin-bottom:0;"></textarea>
+        </div>
+
+        <div style="margin-top:10px; display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="adm-notif-type-email" checked style="width:18px; height:18px; cursor:pointer;">
+          <label for="adm-notif-type-email" style="cursor:pointer; font-size:14px; margin:0;">Email</label>
+          
+          <input type="checkbox" id="adm-notif-type-app" style="width:18px; height:18px; cursor:pointer; margin-left:15px;">
+          <label for="adm-notif-type-app" style="cursor:pointer; font-size:14px; margin:0;">Notifica App</label>
+        </div>
+
+        <button class="btn" onclick="sendAdminEmail()" style="background:#ce1c00; margin-top:10px;">Invia</button>
+      </div>
+
+      <div class="card" style="border-top: 4px solid #0072CE;">
+          <h3 style="margin-top:0"><span class="material-icons" style="vertical-align:middle; color:orange">campaign</span> Invia Avviso Globale</h3>
+          <p style="font-size:13px; color:#666">Invia una notifica push a tutti gli utenti dell'applicazione.</p>
+          <textarea id="adm-msg" class="input-field" placeholder="Scrivi il testo della notifica..." rows="3"></textarea>
+          <button class="btn" onclick="adminSendNotification()" style="background:#0072CE;">Invia Notifica a Tutti</button>
+      </div>
+      `;
+    }
+
+    function adminSendNotification() {
+       const msg = document.getElementById('adm-msg').value;
+       if(!msg) return alert("Inserisci un messaggio.");
+       if(confirm("Sei sicuro di voler inviare questo messaggio a TUTTI gli utenti?")) {
+          google.script.run.withSuccessHandler(alert).apiAdminSendNotif(msg);
+          document.getElementById('adm-msg').value = '';
+       }
+    }
+
+    function updateAdminContactList() {
+      const type = document.getElementById('adm-contact-type').value;
+      const container = document.getElementById('adm-contact-list');
+      
+      if(!type) {
+        container.innerHTML = '<p style="color:#999; text-align:center;">Seleziona una categoria</p>';
+        return;
+      }
+      
+      container.innerHTML = '<p style="color:#999; text-align:center;">Caricamento...</p>';
+      
+      if(type === 'docenti') {
+        google.script.run.withSuccessHandler(teachers => {
+          renderContactList(teachers, container, 'docenti');
+        }).getTeachersList();
+      } else {
+        const programmaFilter = (type === 'studenti-tutti') ? null : type;
+        google.script.run.withSuccessHandler(students => {
+          renderContactList(students, container, 'studenti');
+        }).getStudentsList(programmaFilter);
+      }
+    }
+    
+    function renderContactList(contacts, container, type) {
+      if(!contacts || contacts.length === 0) {
+        container.innerHTML = '<p style="color:#999; text-align:center;">Nessun contatto trovato.</p>';
+        return;
+      }
+      
+      const html = contacts.map((c, idx) => `
+        <div class="list-item" style="padding:10px; border-bottom:1px solid #f0f0f0;">
+          <div style="flex:1;">
+            <div class="list-item-title">${c.nome} ${c.cognome}</div>
+            <div class="list-item-sub">${c.email}${c.programma ? ' • ' + c.programma : ''}</div>
+          </div>
+          <input type="checkbox" class="admin-contact-check" value="${c.email}" data-nome="${c.nome} ${c.cognome}" style="width:18px; height:18px; cursor:pointer;">
+        </div>
+      `).join('');
+      
+      container.innerHTML = html;
+    }
+    
+    function sendAdminEmail() {
+      const checkboxes = document.querySelectorAll('.admin-contact-check:checked');
+      if(checkboxes.length === 0) return alert('Seleziona almeno un contatto.');
+      
+      const msg = document.getElementById('adm-email-msg').value;
+      if(!msg) return alert('Scrivi il messaggio.');
+      
+      const emailChecked = document.getElementById('adm-notif-type-email').checked;
+      const appChecked = document.getElementById('adm-notif-type-app').checked;
+      
+      if(!emailChecked && !appChecked) return alert('Seleziona almeno Email o Notifica App.');
+      
+      const recipients = [];
+      const recipientNames = [];
+      
+      checkboxes.forEach(c => {
+        recipients.push(c.value);
+        recipientNames.push(c.getAttribute('data-nome'));
+      });
+      
+      let notificationType = 'email';
+      if(emailChecked && appChecked) notificationType = 'both';
+      else if(appChecked) notificationType = 'app';
+      
+      const typeLabel = notificationType === 'both' ? 'email e notifica app' : notificationType;
+      
+      if(confirm(`Inviare via ${typeLabel} a ${recipients.length} ${recipients.length === 1 ? 'contatto' : 'contatti'}?`)) {
+        const btn = event.target;
+        btn.innerText = 'Invio...';
+        btn.disabled = true;
+        
+        google.script.run.withSuccessHandler(res => {
+          alert(res);
+          btn.innerText = 'Invia';
+          btn.disabled = false;
+          document.getElementById('adm-email-msg').value = '';
+          document.getElementById('adm-contact-type').value = '';
+          document.getElementById('adm-contact-list').innerHTML = '';
+          document.querySelectorAll('.admin-contact-check').forEach(c => c.checked = false);
+        }).apiSendNotification(recipients, recipientNames, msg, notificationType);
+      }
+    }
+
+    // --- UTILS & MODAL OPENERS ---
+    function switchNotifTab(tab) {
+      currentNotifTab = tab;
+      document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.getElementById('notif-list-non-lette').classList.add('hidden');
+      document.getElementById('notif-list-lette').classList.add('hidden');
+      
+      if(tab === 'non-lette') {
+        document.getElementById('notif-list-non-lette').classList.remove('hidden');
+      } else {
+        document.getElementById('notif-list-lette').classList.remove('hidden');
+      }
+    }
+
+    function openCoursesModal() {
+        document.getElementById('modal-courses').classList.remove('hidden');
+        const cont = document.getElementById('list-courses-container');
+        
+        if(appData.classroom && appData.classroom.length > 0) {
+           cont.innerHTML = appData.classroom.map(c => `
+             <div class="list-item" onclick="window.open('${c.link}', '_blank')" style="cursor:pointer">
+                <div>
+                    <div class="list-item-title" style="color:var(--primary)">${c.name}</div>
+                    <div class="list-item-sub">${c.section || 'Corso attivo'}</div>
+                </div>
+                <span class="material-icons" style="font-size:18px; color:#ccc">open_in_new</span>
+             </div>
+           `).join('');
+        } else {
+           cont.innerHTML = '<div style="text-align:center; padding:20px; color:#999"><span class="material-icons" style="font-size:40px; opacity:0.3">class_off</span><br>Nessun corso attivo.</div>';
+        }
+    }
+
+    function openExamsModal() {
+        document.getElementById('modal-exams').classList.remove('hidden');
+        const cont = document.getElementById('list-exams-container');
+
+        if(appData.libretto && appData.libretto.length > 0) {
+           cont.innerHTML = appData.libretto.map(esame => `
+            <div class="list-item">
+                <div>
+                    <div class="list-item-title">${esame.nomeEsame}</div>
+                    <div class="list-item-sub">${esame.data} • <b>${esame.cfu} CFU</b></div>
+                </div>
+                <div class="grade-badge">${esame.voto}</div>
+            </div>
+          `).join('');
+        } else {
+           cont.innerHTML = '<div style="text-align:center; padding:20px; color:#999"><span class="material-icons" style="font-size:40px; opacity:0.3">assignment_late</span><br>Nessun esame registrato.</div>';
+        }
+    }
+
+    function openNotifications() {
+      toggleSidebar();
+      document.getElementById('modal-notif').classList.remove('hidden');
+      currentNotifTab = 'non-lette';
+      
+      // Aggiorna le notifiche dal server
+      google.script.run.withSuccessHandler(user => {
+        currentUser = user;
+        renderNotifications();
+      }).loginUserBypass(currentUser.email);
+    }
+
+    function renderNotifications() {
+      const notLette = currentUser.notifiche.filter(n => !n.letto);
+      const lette = currentUser.notifiche.filter(n => n.letto);
+      
+      // Render non lette
+      const nonLettaHtml = notLette.length > 0 
+        ? notLette.map(n => createNotifItem(n)).join('')
+        : '<div style="text-align:center; padding:30px; color:#999"><span class="material-icons" style="font-size:48px; color:#eee">mail_outline</span><br><br>Nessuna notifica non letta.</div>';
+      
+      // Render lette
+      const lettaHtml = lette.length > 0 
+        ? lette.map(n => createNotifItem(n, true)).join('')
+        : '<div style="text-align:center; padding:30px; color:#999"><span class="material-icons" style="font-size:48px; color:#eee">done_all</span><br><br>Nessuna notifica letta.</div>';
+      
+      document.getElementById('notif-list-non-lette').innerHTML = nonLettaHtml;
+      document.getElementById('notif-list-lette').innerHTML = lettaHtml;
+      
+      // Reset tab
+      document.querySelectorAll('.notif-tab').forEach((t, idx) => {
+        if(idx === 0) t.classList.add('active');
+        else t.classList.remove('active');
+      });
+      document.getElementById('notif-list-non-lette').classList.remove('hidden');
+      document.getElementById('notif-list-lette').classList.add('hidden');
+    }
+
+    function createNotifItem(notif, isLetto = false) {
+      const data = new Date(notif.data);
+      const dataFormatted = data.toLocaleDateString('it-IT');
+      
+      return `
+        <div class="notif-item ${isLetto ? 'letto' : ''}">
+          <div class="notif-item-content">
+            <div class="notif-item-title">${notif.tipo === 'globale' ? '📢 Avviso Globale' : '📬 Messaggio Personale'}</div>
+            <div class="notif-item-text">${notif.messaggio}</div>
+            <div class="notif-item-date">${dataFormatted}</div>
+            <div class="notif-item-actions">
+              ${!isLetto ? `<button class="notif-btn-read" onclick="markNotifAsRead(${notif.id})">Segna come letto</button>` : ''}
+              <button class="notif-btn-delete" onclick="deleteNotif(${notif.id})">Elimina</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function markNotifAsRead(notifId) {
+      google.script.run.withSuccessHandler(success => {
+        if(success) {
+          const notif = currentUser.notifiche.find(n => n.id === notifId);
+          if(notif) notif.letto = true;
+          renderNotifications();
+          
+          // Aggiorna i badge
+          const hasUnread = currentUser.notifiche.some(n => !n.letto);
+          if(!hasUnread) {
+            document.getElementById('sidebar-notif-badge').style.display = 'none';
+            document.getElementById('external-notif-badge').style.display = 'none';
+          }
+        }
+      }).apiDismissNotif(currentUser.email, notifId);
+    }
+
+    function deleteNotif(notifId) {
+      if(confirm('Sei sicuro di voler eliminare questa notifica?')) {
+        google.script.run.withSuccessHandler(success => {
+          if(success) {
+            currentUser.notifiche = currentUser.notifiche.filter(n => n.id !== notifId);
+            renderNotifications();
+            
+            // Aggiorna i badge
+            const hasUnread = currentUser.notifiche.some(n => !n.letto);
+            if(!hasUnread) {
+              document.getElementById('sidebar-notif-badge').style.display = 'none';
+              document.getElementById('external-notif-badge').style.display = 'none';
+            }
+          }
+        }).apiDeleteNotif(currentUser.email, notifId);
+      }
+    }
+
+    function openMediaModal() {
+      document.getElementById('modal-media').classList.remove('hidden');
+      document.getElementById('mod-media-p').innerText = appData.media;
+      document.getElementById('mod-media-a').innerText = appData.mediaAritmetica || appData.media; 
+    }
+
+    function openCFUModal() {
+      document.getElementById('modal-cfu').classList.remove('hidden');
+      document.getElementById('txt-mancanti').innerHTML = `Ti mancano <b>${appData.cfuMancanti}</b> CFU alla laurea.`;
+      
+      if(window.myChart) window.myChart.destroy();
+      const ctx = document.getElementById('cfuChart').getContext('2d');
+      window.myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Acquisiti', 'Mancanti'],
+          datasets: [{ 
+              data: [appData.cfu, appData.cfuMancanti], 
+              backgroundColor: ['#0072CE', '#eeeeee'],
+              borderWidth: 0
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    function openTicketModal() { document.getElementById('modal-ticket').classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function sendTicket() {
+      const type = document.getElementById('msg-type').value;
+      if(!type) return alert("Seleziona una categoria.");
+      
+      const text = document.getElementById('msg-text').value;
+      if(!text) return alert("Scrivi il tuo messaggio.");
+
+      const btn = document.querySelector('#modal-ticket .btn');
+      btn.innerText = "Invio in corso...";
+      
+      const form = { 
+        user: currentUser.email, 
+        tipoTicket: type, 
+        note: text 
+      };
+      
+      google.script.run.withSuccessHandler(res => {
+          alert(res);
+          btn.innerText = "Invia Ticket";
+          document.getElementById('msg-text').value = '';
+          document.getElementById('msg-type').value = '';
+          closeModal('modal-ticket');
+      }).sendTicketRequest(form);
+    }
+
+    function openProfile() {
+      document.getElementById('modal-profile').classList.remove('hidden');
+      document.getElementById('sidebar').classList.remove('active');
+      document.getElementById('sidebar-overlay').classList.remove('active');
+      
+      const currentSrc = document.getElementById('top-avatar').src;
+      document.getElementById('prof-img-lg').src = currentSrc;
+      document.getElementById('prof-name').innerText = currentUser.nome + " " + currentUser.cognome;
+      
+      let roleText = (currentUser.role === 'student') ? "Studente" : (currentUser.role === 'teacher' ? "Docente" : "Admin");
+      const matricolaText = currentUser.matricola ? ` • ${currentUser.matricola}` : "";
+      document.getElementById('prof-role-badge').innerText = roleText + matricolaText;
+    }
+    
+    function handleFileUpload(input) {
+      if(input.files[0]) {
+        const f = input.files[0];
+        const r = new FileReader();
+        const lbl = input.parentElement;
+        const originalText = lbl.innerHTML;
+        lbl.innerText = "Caricamento...";
+        
+        r.onload = e => google.script.run.withSuccessHandler(res => { 
+              if(res.success) { 
+                  alert('Foto aggiornata con successo!'); 
+                  location.reload(); 
+              } else {
+                  alert('Errore: ' + res.error);
+                  lbl.innerHTML = originalText;
+              }
+        }).uploadProfileImage(e.target.result.split(',')[1], f.type, f.name, currentUser.email);
+        r.readAsDataURL(f);
+      }
+    }
+  </script>
+</body>
+</html>
